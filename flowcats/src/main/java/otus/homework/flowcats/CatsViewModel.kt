@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
@@ -16,21 +17,14 @@ class CatsViewModel(
 
     private val _catsState =
         MutableStateFlow<Result<Fact>>(Result.Error(IllegalStateException("No data")))
-    val catsState: StateFlow<Result<Fact>> = _catsState
+    val catsState: StateFlow<Result<Fact>> = _catsState.asStateFlow()
 
     init {
         viewModelScope.launch {
-                catsRepository.listenForCatFacts()
-                    .map { fact ->
-                        Result.Success(fact) as Result<Fact>
-                    }
-                    .catch { throwable ->
-                        _catsState.value = Result.Error(throwable)
-                    }
-                    .collect { result ->
-                        _catsState.value = result
-                    }
-
+            catsRepository.listenForCatFacts()
+                .collect { result ->
+                    _catsState.value = result
+                }
         }
     }
 }
