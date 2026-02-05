@@ -14,6 +14,7 @@ class CatsRepository(
             try {
                 emit(Result.Success(catsService.getCatFact()))
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 emit(Result.Error(e))
                 break
             }
